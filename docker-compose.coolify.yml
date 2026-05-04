@@ -33,7 +33,7 @@ services:
     image: ghcr.io/nesquena/hermes-webui:latest
     network_mode: bridge
     ports:
-      - "8787:8787"
+      - "127.0.0.1:8787:8787"
     volumes:
       - hermes-data:/opt/data
     environment:
