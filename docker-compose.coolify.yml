@@ -22,6 +22,14 @@ services:
       - HINDSIGHT_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - OPENPASS_MCP_TOKEN=Bearer ${OPENPASS_MCP_TOKEN}
+    command:
+      - sh
+      - -c
+      - |
+        /opt/hermes/.venv/bin/hermes config set model.provider "deepseek"
+        /opt/hermes/.venv/bin/hermes config set model.default "deepseek-v4-flash"
+        /opt/hermes/.venv/bin/hermes config set model.base_url "https://api.deepseek.com"
+        exec /opt/hermes/.venv/bin/hermes gateway run
     restart: unless-stopped
 
   webui:
