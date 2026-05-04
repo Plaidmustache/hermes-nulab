@@ -92,7 +92,14 @@ services:
     environment:
       - OPENPASS_VAULT=/root/.openpass
       - OPENPASS_PASSPHRASE=${OPENPASS_PASSPHRASE}
-    command: ["serve", "--bind", "0.0.0.0", "--port", "8788"]
+    command:
+      - sh
+      - -c
+      - |
+        if [ ! -f /root/.openpass/vault.db ]; then
+          openpass init --passphrase "$${OPENPASS_PASSPHRASE}"
+        fi
+        exec openpass serve --bind 0.0.0.0 --port 8788
     restart: unless-stopped
 
   hindsight:
