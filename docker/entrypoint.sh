@@ -41,6 +41,23 @@ if [ "$(id -u)" = "0" ]; then
             echo "Warning: chown failed (rootless container?) — continuing anyway"
     fi
 
+    # The image builds the npm trees as the image-time hermes user (UID 10000).
+    # When HERMES_UID remaps hermes to the host UID, those trees need to be
+    # handed over again or the runtime TUI bootstrap cannot write node_modules.
+    if [ -n "$HERMES_UID" ] && [ "$HERMES_UID" != "10000" ]; then
+        echo "Fixing ownership of $INSTALL_DIR node_modules to hermes ($actual_hermes_uid)"
+        for npm_dir in \
+            "$INSTALL_DIR/node_modules" \
+            "$INSTALL_DIR/web/node_modules" \
+            "$INSTALL_DIR/ui-tui/node_modules" \
+            "$INSTALL_DIR/ui-tui/packages/hermes-ink/node_modules"
+        do
+            if [ -d "$npm_dir" ]; then
+                chown -R hermes:hermes "$npm_dir" 2>/dev/null || true
+            fi
+        done
+    fi
+
     # Ensure config.yaml is readable by the hermes runtime user even if it was
     # edited on the host after initial ownership setup. Must run here (as root)
     # rather than after the gosu drop, otherwise a non-root caller like

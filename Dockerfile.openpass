@@ -1,0 +1,17 @@
+FROM alpine:latest
+
+RUN apk add --no-cache ca-certificates curl tar && \
+    ARCH=$(uname -m) && \
+    if [ "$ARCH" = "aarch64" ]; then ARCH="arm64"; else ARCH="amd64"; fi && \
+    VERSION=2.1.0 && \
+    URL="https://github.com/danieljustus/OpenPass/releases/download/v${VERSION}/OpenPass_${VERSION}_linux_${ARCH}.tar.gz" && \
+    echo "Downloading $URL" && \
+    curl -fsSL "$URL" | tar xz -C /tmp && \
+    mv /tmp/OpenPass_${VERSION}_linux_${ARCH}/openpass /usr/local/bin/ && \
+    rm -rf /tmp/OpenPass_${VERSION}_linux_${ARCH} && \
+    chmod +x /usr/local/bin/openpass && \
+    apk del curl tar
+
+VOLUME ["/root/.openpass"]
+ENTRYPOINT ["/usr/local/bin/openpass"]
+CMD ["serve", "--bind", "0.0.0.0", "--port", "8788"]

@@ -860,6 +860,13 @@ def _tui_need_npm_install(root: Path) -> bool:
     we'd rather not force a reinstall for them. Falls back to mtime
     comparison if either lockfile is unparseable.
     """
+    # Skip runtime npm install check in Docker mode - dependencies are
+    # installed at build time and runtime install would fail due to permissions.
+    # HERMES_WEB_DIST is set in Docker builds, and HERMES_UID indicates a
+    # containerized environment with UID remapping.
+    if os.environ.get("HERMES_WEB_DIST") or os.environ.get("HERMES_UID"):
+        return False
+
     ink = root / "node_modules" / "@hermes" / "ink" / "package.json"
     if not ink.is_file():
         return True
@@ -1043,7 +1050,15 @@ def _make_tui_argv(tui_dir: Path, tui_dev: bool) -> tuple[list[str], Path]:
         if not os.environ.get("HERMES_QUIET"):
             print("Installing TUI dependencies…")
         result = subprocess.run(
-            [npm, "install", "--silent", "--no-fund", "--no-audit", "--progress=false"],
+            [
+                npm,
+                "install",
+                "--silent",
+                "--no-fund",
+                "--no-audit",
+                "--progress=false",
+                "--package-lock=false",
+            ],
             cwd=str(tui_dir),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.PIPE,

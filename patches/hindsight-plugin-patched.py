@@ -171,16 +171,6 @@ RECALL_SCHEMA = {
         "type": "object",
         "properties": {
             "query": {"type": "string", "description": "What to search for."},
-            "tags": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Optional. Only return memories with these tags.",
-            },
-            "tags_match": {
-                "type": "string",
-                "enum": ["any", "all"],
-                "description": "How to match multiple tags: 'any' (default) matches memories with at least one of the tags, 'all' requires every tag. Only used when tags is provided.",
-            },
         },
         "required": ["query"],
     },
@@ -196,16 +186,6 @@ REFLECT_SCHEMA = {
         "type": "object",
         "properties": {
             "query": {"type": "string", "description": "The question to reflect on."},
-            "tags": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Optional. Only reflect on memories with these tags.",
-            },
-            "tags_match": {
-                "type": "string",
-                "enum": ["any", "all"],
-                "description": "How to match multiple tags: 'any' (default) matches memories with at least one of the tags, 'all' requires every tag. Only used when tags is provided.",
-            },
         },
         "required": ["query"],
     },
@@ -1404,11 +1384,7 @@ class HindsightMemoryProvider(MemoryProvider):
                     "bank_id": self._bank_id, "query": query, "budget": self._budget,
                     "max_tokens": self._recall_max_tokens,
                 }
-                tags = args.get("tags")
-                if tags:
-                    recall_kwargs["tags"] = tags
-                    recall_kwargs["tags_match"] = args.get("tags_match", "any")
-                elif self._recall_tags:
+                if self._recall_tags:
                     recall_kwargs["tags"] = self._recall_tags
                     recall_kwargs["tags_match"] = self._recall_tags_match
                 if self._recall_types:
@@ -1431,18 +1407,11 @@ class HindsightMemoryProvider(MemoryProvider):
             if not query:
                 return tool_error("Missing required parameter: query")
             try:
-                reflect_kwargs: dict = {
-                    "bank_id": self._bank_id, "query": query, "budget": self._budget,
-                }
-                tags = args.get("tags")
-                if tags:
-                    reflect_kwargs["tags"] = tags
-                    reflect_kwargs["tags_match"] = args.get("tags_match", "any")
                 logger.debug("Tool hindsight_reflect: bank=%s, query_len=%d, budget=%s",
                              self._bank_id, len(query), self._budget)
                 resp = self._run_hindsight_operation(
                     lambda client: client.areflect(
-                        **reflect_kwargs
+                        bank_id=self._bank_id, query=query, budget=self._budget
                     )
                 )
                 logger.debug("Tool hindsight_reflect: response_len=%d", len(resp.text or ""))

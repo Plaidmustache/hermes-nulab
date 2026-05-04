@@ -1,0 +1,39 @@
+# Coolify environment variables for hermes-nulab deployment.
+# Set these as service environment variables in Coolify's dashboard
+# for the gateway service.
+
+# ── Required ──────────────────────────────────────────────────────
+# LLM provider — DeepSeek API key
+DEEPSEEK_API_KEY=sk-...
+
+# OpenPass vault passphrase (clean alphanumeric, no / + =)
+OPENPASS_PASSPHRASE=...
+
+# OpenPass MCP bearer token (must match vault's mcp-token file)
+OPENPASS_MCP_TOKEN=...
+
+# ── Gateway access (pick one) ─────────────────────────────────────
+# Option A: Open access (development / trusted network only)
+GATEWAY_ALLOW_ALL_USERS=true
+
+# Option B: Per-user allowlist (production)
+# TELEGRAM_ALLOWED_USERS=your-telegram-id
+# DISCORD_ALLOWED_USERS=your-discord-id
+
+# ── Recommended ───────────────────────────────────────────────────
+# User/group IDs for file ownership (Linux default is 1000)
+HERMES_UID=1000
+HERMES_GID=1000
+
+# ── Optional ──────────────────────────────────────────────────────
+# API server (if you want OpenAI-compatible API access)
+# API_SERVER_KEY=your-secret-key
+# API_SERVER_HOST=0.0.0.0
+
+# Messaging platforms (uncomment if using)
+# TELEGRAM_BOT_TOKEN=...
+# DISCORD_BOT_TOKEN=...
+# SLACK_BOT_TOKEN=...
+
+# Terminal backend (Docker is default for gateway)
+# TERMINAL_ENV=docker

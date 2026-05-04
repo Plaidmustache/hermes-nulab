@@ -1,0 +1,95 @@
+# Local isolation for the hermes-nulab checkout.
+#
+# The upstream compose file mounts ~/.hermes and uses generic container names.
+# This override keeps local test state inside this project and prevents clashes
+# with the existing paperclip-hermes deployment.
+#
+# Coolify notes:
+#   - Coolify manages networking — no changes needed to this file.
+#   - Set these env vars in Coolify's service configuration:
+#     DEEPSEEK_API_KEY, OPENPASS_PASSPHRASE, OPENPASS_MCP_TOKEN
+#   - If service-to-service DNS doesn't work on Coolify, replace
+#     host.docker.internal with the actual service hostname in config files.
+
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.gateway
+    container_name: hermes-nulab
+    network_mode: bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:18642:18642"
+    volumes:
+      - ./.hermes-data:/opt/data
+      - ./patches/hindsight-plugin-patched.py:/opt/hermes/plugins/memory/hindsight/__init__.py
+    environment:
+      - HERMES_UID=${HERMES_UID:-501}
+      - HERMES_GID=${HERMES_GID:-20}
+      - API_SERVER_ENABLED=${API_SERVER_ENABLED:-true}
+      - API_SERVER_HOST=${API_SERVER_HOST:-0.0.0.0}
+      - API_SERVER_PORT=${API_SERVER_PORT:-18642}
+      - API_SERVER_KEY=${API_SERVER_KEY:-dev-only-hermes-nulab}
+      - API_SERVER_MODEL_NAME=${API_SERVER_MODEL_NAME:-hermes-nulab}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      - GATEWAY_ALLOW_ALL_USERS=${GATEWAY_ALLOW_ALL_USERS:-true}
+      - HINDSIGHT_LLM_API_KEY=${DEEPSEEK_API_KEY}
+      - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENPASS_MCP_TOKEN=Bearer ${OPENPASS_MCP_TOKEN}
+
+  webui:
+    image: ghcr.io/nesquena/hermes-webui:latest
+    container_name: hermes-nulab-webui
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      - ./.hermes-data:/opt/data
+      - .:/opt/hermes-agent-src
+      - ./webui-static/notification.ogg:/apptoo/static/notification.ogg
+      - ./webui-static/messages.js:/apptoo/static/messages.js
+    environment:
+      - HERMES_WEBUI_HOST=0.0.0.0
+      - HERMES_WEBUI_PORT=8787
+      - HERMES_HOME=/opt/data
+      - HERMES_WEBUI_STATE_DIR=/opt/data
+      - HERMES_WEBUI_AUTO_INSTALL=1
+      - HERMES_WEBUI_AGENT_DIR=/opt/hermes-agent-src
+      - WANTED_UID=${HERMES_UID:-501}
+      - WANTED_GID=${HERMES_GID:-20}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+    depends_on:
+      - gateway
+
+  openpass:
+    build:
+      context: .
+      dockerfile: Dockerfile.openpass
+    container_name: hermes-nulab-openpass
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:8788:8788"
+    volumes:
+      - ./.hermes-data/.openpass:/root/.openpass
+    environment:
+      - OPENPASS_VAULT=/root/.openpass
+      - OPENPASS_PASSPHRASE=${OPENPASS_PASSPHRASE}
+    command: ["serve", "--bind", "0.0.0.0", "--port", "8788"]
+    restart: unless-stopped
+
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:latest
+    container_name: hermes-nulab-hindsight
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:8888:8888"
+    volumes:
+      - ./.hermes-data/hindsight-data:/home/hindsight/.pg0
+    environment:
+      - HINDSIGHT_API_LLM_PROVIDER=deepseek
+      - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
+      - HINDSIGHT_API_LLM_MODEL=deepseek-v4-flash
+    restart: unless-stopped

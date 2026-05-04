@@ -12,6 +12,7 @@ __pycache__/
 .env.production.local
 .env.development
 .env.test
+.hermes-data/
 export*
 __pycache__/model_tools.cpython-310.pyc
 __pycache__/web_tools.cpython-310.pyc
@@ -70,3 +71,5 @@ mini-swe-agent/
 result
 website/static/api/skills-index.json
 models-dev-upstream/
+.env
+build/

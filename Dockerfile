@@ -67,6 +67,7 @@ RUN cd web && npm run build && \
 # Make install dir world-readable so any HERMES_UID can read it at runtime.
 # The venv needs to be traversable too.
 USER root
+RUN chown -R hermes:hermes /opt/hermes/ui-tui/node_modules /opt/hermes/web/node_modules
 RUN chmod -R a+rX /opt/hermes
 # Start as root so the entrypoint can usermod/groupmod + gosu.
 # If HERMES_UID is unset, the entrypoint drops to the default hermes user (10000).

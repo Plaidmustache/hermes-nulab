@@ -2932,6 +2932,15 @@ def _build_sidecar_url(channel: str) -> Optional[str]:
     if not host or not port:
         return None
 
+    # The dashboard may bind to 0.0.0.0 or :: so the browser can reach it
+    # through Docker port publishing, but the PTY child is started inside the
+    # same container. It needs a real connectable loopback address here, not a
+    # wildcard bind address.
+    if host == "0.0.0.0":
+        host = "127.0.0.1"
+    elif host == "::":
+        host = "::1"
+
     netloc = f"[{host}]:{port}" if ":" in host and not host.startswith("[") else f"{host}:{port}"
     qs = urllib.parse.urlencode({"token": _SESSION_TOKEN, "channel": channel})
 
@@ -2972,8 +2981,9 @@ async def pty_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
-    client_host = ws.client.host if ws.client else ""
-    if client_host and client_host not in _LOOPBACK_HOSTS:
+    host_header = ws.headers.get("host", "")
+    bound_host = getattr(app.state, "bound_host", None) or ""
+    if not _is_accepted_host(host_header, bound_host):
         await ws.close(code=4403)
         return
 
@@ -3080,8 +3090,9 @@ async def gateway_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
-    client_host = ws.client.host if ws.client else ""
-    if client_host and client_host not in _LOOPBACK_HOSTS:
+    host_header = ws.headers.get("host", "")
+    bound_host = getattr(app.state, "bound_host", None) or ""
+    if not _is_accepted_host(host_header, bound_host):
         await ws.close(code=4403)
         return
 
@@ -3113,8 +3124,9 @@ async def pub_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
-    client_host = ws.client.host if ws.client else ""
-    if client_host and client_host not in _LOOPBACK_HOSTS:
+    host_header = ws.headers.get("host", "")
+    bound_host = getattr(app.state, "bound_host", None) or ""
+    if not _is_accepted_host(host_header, bound_host):
         await ws.close(code=4403)
         return
 
@@ -3143,8 +3155,20 @@ async def events_ws(ws: WebSocket) -> None:
         await ws.close(code=4401)
         return
 
+    # Use Host header instead of client.host for Docker port forwarding compatibility.
+    # When accessing via localhost:DPORT, the Host header reflects the original destination
+    # even though the connection comes from Docker's bridge network.
+    host_header = ws.headers.get("host", "").split(":")[0]  # Strip port
     client_host = ws.client.host if ws.client else ""
-    if client_host and client_host not in _LOOPBACK_HOSTS:
+
+    # Accept if EITHER the Host header is loopback OR the direct client IP is loopback
+    # This handles both direct connections and Docker port forwarding
+    is_loopback = (
+        (host_header and host_header in _LOOPBACK_HOSTS) or
+        (client_host and client_host in _LOOPBACK_HOSTS)
+    )
+
+    if client_host and not is_loopback:
         await ws.close(code=4403)
         return
 
