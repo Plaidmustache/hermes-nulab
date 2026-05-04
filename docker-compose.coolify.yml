@@ -34,6 +34,8 @@ services:
         /opt/hermes/.venv/bin/hermes config set auxiliary.vision.model "glm-4.6v"
         /opt/hermes/.venv/bin/hermes config set auxiliary.vision.provider "zai"
         chmod -R a+rX /opt/hermes
+        chmod 755 /opt/data
+        chmod 644 /opt/data/config.yaml 2>/dev/null || true
         exec /opt/hermes/.venv/bin/hermes gateway run
     restart: unless-stopped
 
