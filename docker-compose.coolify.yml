@@ -31,8 +31,8 @@ services:
         /opt/hermes/.venv/bin/hermes config set model.provider "deepseek"
         /opt/hermes/.venv/bin/hermes config set model.default "deepseek-v4-flash"
         /opt/hermes/.venv/bin/hermes config set model.base_url "https://api.deepseek.com"
-        /opt/hermes/.venv/bin/hermes config set auxiliary.vision.model "glm-4v-plus"
-        /opt/hermes/.venv/bin/hermes config set auxiliary.vision.base_url "https://api.z.ai/api/coding/paas/v4"
+        /opt/hermes/.venv/bin/hermes config set auxiliary.vision.model "glm-5v-turbo"
+        /opt/hermes/.venv/bin/hermes config set auxiliary.vision.provider "zai"
         chmod -R a+rX /opt/hermes
         exec /opt/hermes/.venv/bin/hermes gateway run
     restart: unless-stopped
