@@ -46,6 +46,7 @@ services:
       - HERMES_WEBUI_STATE_DIR=/opt/data
       - HERMES_WEBUI_AUTO_INSTALL=1
       - HERMES_WEBUI_PASSWORD=Sillyauth2020?
+      - HERMES_WEBUI_DEFAULT_WORKSPACE=/opt/data/workspace
       - WANTED_UID=501
       - WANTED_GID=20
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
