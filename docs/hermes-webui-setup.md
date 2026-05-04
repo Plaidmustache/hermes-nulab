@@ -1,5 +1,9 @@
 # Hermes WebUI — Setup Guide (alongside hermes-agent Docker deployment)
 
+> [!warning] LOCAL DEV ONLY — macOS Docker
+> For Coolify VPS deployment at **hermes.nulab.cc**, see Obsidian:
+> `02-VPS Runbooks/Hermes-Nulab Coolify Deployment.md`
+
 ## 1. Prerequisites
 
 - Existing hermes-agent running in Docker (gateway container)

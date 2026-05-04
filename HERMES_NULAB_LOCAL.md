@@ -13,6 +13,14 @@ This project uses three compose files for different environments:
 - **Local:** `docker compose up -d --build` — Docker auto-merges base + override.
 - **VPS:** `docker-compose.coolify.yml` is referenced by Coolify, auto-deploys on push to `main`.
 
+### Which Doc for What
+
+| Environment | Compose file | Setup guides | Deployment runbook |
+|---|---|---|---|
+| **Local dev** (macOS) | `docker-compose.override.yml` | `docs/hermes-hindsight-setup.md`, `docs/hermes-webui-setup.md` | This file (`HERMES_NULAB_LOCAL.md`) |
+| **Coolify VPS** (hermes.nulab.cc) | `docker-compose.coolify.yml` | `02-VPS Runbooks/Hindsight Memory on Coolify.md` | `02-VPS Runbooks/Hermes-Nulab Coolify Deployment.md` |
+| **Upstream base** | `docker-compose.yml` | `UPSTREAM_AGENTS.md` | github.com/NousResearch/hermes-agent |
+
 This checkout is intentionally isolated from the existing `paperclip-hermes`
 deployment.
 
@@ -34,8 +42,7 @@ The override also uses Docker bridge networking with localhost-bound ports
 instead of upstream `network_mode: host`, which avoids Docker Desktop host
 networking surprises on macOS.
 
-**Deployment:** For Coolify VPS deployment, see `CLAUDE.md` and
-`docker-compose.coolify.yml`.
+**Deployment:** For Coolify VPS deployment at **hermes.nulab.cc**, see Obsidian runbook `02-VPS Runbooks/Hermes-Nulab Coolify Deployment.md` and `CLAUDE.md` for workflow rules.
 
 The dashboard runs with Hermes' `--insecure` flag inside Docker only so it can
 bind to `0.0.0.0` in the container. Docker publishes it to localhost only:

@@ -1,5 +1,8 @@
 #
-# docker-compose.yml for Hermes Agent
+# docker-compose.yml — upstream from github.com/NousResearch/hermes-agent.
+# NOT used directly for local dev or Coolify VPS (hermes.nulab.cc).
+# Local dev: Docker auto-merges this with docker-compose.override.yml.
+# Coolify: uses docker-compose.coolify.yml instead (compose networking, named volumes).
 #
 # Usage:
 #   HERMES_UID=$(id -u) HERMES_GID=$(id -g) docker compose up -d

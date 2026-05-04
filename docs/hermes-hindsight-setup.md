@@ -1,5 +1,9 @@
 # Hindsight Memory Setup for Hermes
 
+> [!warning] LOCAL DEV ONLY — macOS Docker
+> For Coolify VPS deployment at **hermes.nulab.cc**, see Obsidian:
+> `02-VPS Runbooks/Hindsight Memory on Coolify.md`
+
 ## Architecture
 
 ```
