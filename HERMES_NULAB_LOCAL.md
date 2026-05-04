@@ -1,5 +1,18 @@
 # Hermes Nulab Local Instance
 
+## Compose Files
+
+This project uses three compose files for different environments:
+
+| File | Environment | Auto-loaded? | Networking | Volumes |
+|---|---|---|---|---|
+| `docker-compose.yml` | Base (upstream) | Yes | `network_mode: host` | `~/.hermes` |
+| `docker-compose.override.yml` | **Local dev** | Yes (Docker auto-merges) | Bridge, localhost ports | `./.hermes-data` (bind mount) |
+| `docker-compose.coolify.yml` | **Coolify VPS** | No (explicit `-f`) | Compose networking, service names | Named Docker volumes |
+
+- **Local:** `docker compose up -d --build` — Docker auto-merges base + override.
+- **VPS:** `docker-compose.coolify.yml` is referenced by Coolify, auto-deploys on push to `main`.
+
 This checkout is intentionally isolated from the existing `paperclip-hermes`
 deployment.
 

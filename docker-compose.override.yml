@@ -1,13 +1,16 @@
-# Local isolation for the hermes-nulab checkout.
+# ── LOCAL DEV OVERRIDE ─────────────────────────────────────────────
+# Auto-merged by Docker Compose with docker-compose.yml when you run:
+#   docker compose up -d --build
+#
+# This file isolates local dev from the paperclip-hermes deployment.
+# Uses bridge networking, localhost-bound ports, and ./hermes-data/.
+#
+# NOT used by Coolify VPS — see docker-compose.coolify.yml for that.
+# ───────────────────────────────────────────────────────────────────
 #
 # The upstream compose file mounts ~/.hermes and uses generic container names.
 # This override keeps local test state inside this project and prevents clashes
 # with the existing paperclip-hermes deployment.
-#
-# Coolify notes:
-#   - Coolify manages networking — no changes needed to this file.
-#   - Set these env vars in Coolify's service configuration:
-#     DEEPSEEK_API_KEY, OPENPASS_PASSPHRASE, OPENPASS_MCP_TOKEN
 #   - If service-to-service DNS doesn't work on Coolify, replace
 #     host.docker.internal with the actual service hostname in config files.
 
@@ -39,6 +42,28 @@ services:
       - HINDSIGHT_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - OPENPASS_MCP_TOKEN=Bearer ${OPENPASS_MCP_TOKEN}
+
+  dashboard:
+    build: .
+    container_name: hermes-nulab-dashboard
+    network_mode: bridge
+    ports:
+      - "127.0.0.1:9119:9119"
+    volumes:
+      - ./.hermes-data:/opt/data
+    environment:
+      - HERMES_UID=${HERMES_UID:-501}
+      - HERMES_GID=${HERMES_GID:-20}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+    command:
+      - dashboard
+      - --host
+      - 0.0.0.0
+      - --port
+      - "9119"
+      - --tui
+      - --insecure
+      - --no-open
 
   webui:
     image: ghcr.io/nesquena/hermes-webui:latest

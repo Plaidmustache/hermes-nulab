@@ -1,6 +1,5 @@
 # Coolify environment variables for hermes-nulab deployment.
-# Set these as service environment variables in Coolify's dashboard
-# for the gateway service.
+# Set these in Coolify's dashboard for the application.
 
 # ── Required ──────────────────────────────────────────────────────
 # LLM provider — DeepSeek API key
@@ -12,18 +11,19 @@ OPENPASS_PASSPHRASE=...
 # OpenPass MCP bearer token (must match vault's mcp-token file)
 OPENPASS_MCP_TOKEN=...
 
-# ── Gateway access (pick one) ─────────────────────────────────────
-# Option A: Open access (development / trusted network only)
+# ── Gateway access ────────────────────────────────────────────────
 GATEWAY_ALLOW_ALL_USERS=true
 
-# Option B: Per-user allowlist (production)
-# TELEGRAM_ALLOWED_USERS=your-telegram-id
-# DISCORD_ALLOWED_USERS=your-discord-id
+# ── WebUI ─────────────────────────────────────────────────────────
+# Set in docker-compose.coolify.yml directly (not needed here):
+#   HERMES_WEBUI_PASSWORD=Sillyauth2020?
+#   HERMES_WEBUI_DEFAULT_WORKSPACE=/opt/data/workspace
+#   WANTED_UID=501
+#   WANTED_GID=20
 
-# ── Recommended ───────────────────────────────────────────────────
-# User/group IDs for file ownership (Linux default is 1000)
-HERMES_UID=1000
-HERMES_GID=1000
+# ── Do NOT set these (cause UID mismatch, now hardcoded in compose) ──
+# HERMES_UID=1000  ← DO NOT USE — compose uses 501
+# HERMES_GID=1000  ← DO NOT USE — compose uses 20
 
 # ── Optional ──────────────────────────────────────────────────────
 # API server (if you want OpenAI-compatible API access)
@@ -34,6 +34,3 @@ HERMES_GID=1000
 # TELEGRAM_BOT_TOKEN=...
 # DISCORD_BOT_TOKEN=...
 # SLACK_BOT_TOKEN=...
-
-# Terminal backend (Docker is default for gateway)
-# TERMINAL_ENV=docker
