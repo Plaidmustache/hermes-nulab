@@ -1,5 +1,6 @@
 #!/bin/bash
-echo "[entrypoint-wrapper] fixing volume permissions..."
-chmod 755 /opt/data || echo "[entrypoint-wrapper] WARNING: chmod /opt/data failed"
-chmod 644 /opt/data/config.yaml || echo "[entrypoint-wrapper] WARNING: chmod config.yaml failed"
+chmod 755 /opt/data || true
+chmod 644 /opt/data/config.yaml || true
 exec /opt/hermes/docker/entrypoint.sh "$@"
+# After original entrypoint finishes (should never reach here since entrypoint execs hermes)
+stat -c '%a' /opt/data/
