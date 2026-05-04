@@ -22,6 +22,7 @@ services:
       - GATEWAY_ALLOW_ALL_USERS=${GATEWAY_ALLOW_ALL_USERS:-true}
       - HINDSIGHT_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
+      - ZAI_API_KEY=${ZAI_API_KEY}
       - OPENPASS_MCP_TOKEN=Bearer ${OPENPASS_MCP_TOKEN}
     command:
       - sh
@@ -30,6 +31,8 @@ services:
         /opt/hermes/.venv/bin/hermes config set model.provider "deepseek"
         /opt/hermes/.venv/bin/hermes config set model.default "deepseek-v4-flash"
         /opt/hermes/.venv/bin/hermes config set model.base_url "https://api.deepseek.com"
+        /opt/hermes/.venv/bin/hermes config set auxiliary.vision.model "glm-4v-plus"
+        /opt/hermes/.venv/bin/hermes config set auxiliary.vision.base_url "https://open.bigmodel.cn/api/paas/v4"
         chmod -R a+rX /opt/hermes
         exec /opt/hermes/.venv/bin/hermes gateway run
     restart: unless-stopped
