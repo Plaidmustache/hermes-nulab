@@ -57,21 +57,12 @@ services:
     image: caddy:2-alpine
     ports:
       - "8787:80"
-    environment:
-      - WEBUI_BASIC_AUTH_USER=${WEBUI_BASIC_AUTH_USER:-}
-      - WEBUI_BASIC_AUTH_PASSWORD=${WEBUI_BASIC_AUTH_PASSWORD:-}
     command:
       - sh
       - -c
       - |
-        test -n "$${WEBUI_BASIC_AUTH_USER}"
-        test -n "$${WEBUI_BASIC_AUTH_PASSWORD}"
-        WEBUI_BASIC_AUTH_HASH="$$(caddy hash-password --plaintext "$${WEBUI_BASIC_AUTH_PASSWORD}")"
         cat >/etc/caddy/Caddyfile <<CEOF
         :80 {
-          basic_auth {
-            $${WEBUI_BASIC_AUTH_USER} $${WEBUI_BASIC_AUTH_HASH}
-          }
           reverse_proxy webui:8787
         }
         CEOF
