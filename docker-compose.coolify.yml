@@ -51,6 +51,8 @@ services:
   webui-auth:
     image: caddy:2-alpine
     network_mode: bridge
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8787:80"
     environment:
