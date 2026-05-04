@@ -32,8 +32,8 @@ services:
   webui:
     image: ghcr.io/nesquena/hermes-webui:latest
     network_mode: bridge
-    ports:
-      - "127.0.0.1:8787:8787"
+    expose:
+      - "8787"
     volumes:
       - hermes-data:/opt/data
     environment:
@@ -47,6 +47,34 @@ services:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
     depends_on:
       - gateway
+
+  webui-auth:
+    image: caddy:2-alpine
+    network_mode: bridge
+    ports:
+      - "8787:80"
+    environment:
+      - WEBUI_BASIC_AUTH_USER=${WEBUI_BASIC_AUTH_USER:-}
+      - WEBUI_BASIC_AUTH_PASSWORD=${WEBUI_BASIC_AUTH_PASSWORD:-}
+    command:
+      - sh
+      - -c
+      - |
+        test -n "$${WEBUI_BASIC_AUTH_USER}"
+        test -n "$${WEBUI_BASIC_AUTH_PASSWORD}"
+        WEBUI_BASIC_AUTH_HASH="$$(caddy hash-password --plaintext "$${WEBUI_BASIC_AUTH_PASSWORD}")"
+        cat >/etc/caddy/Caddyfile <<CEOF
+        :80 {
+          basic_auth {
+            $${WEBUI_BASIC_AUTH_USER} $${WEBUI_BASIC_AUTH_HASH}
+          }
+          reverse_proxy host.docker.internal:8787
+        }
+        CEOF
+        exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
+    depends_on:
+      - webui
+    restart: unless-stopped
 
   openpass:
     build:
