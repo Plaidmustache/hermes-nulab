@@ -92,9 +92,8 @@ services:
     environment:
       - OPENPASS_VAULT=/root/.openpass
       - OPENPASS_PASSPHRASE=${OPENPASS_PASSPHRASE}
+    entrypoint: ["sh", "-c"]
     command:
-      - sh
-      - -c
       - |
         if [ ! -f /root/.openpass/vault.db ]; then
           openpass init --passphrase "$${OPENPASS_PASSPHRASE}"
