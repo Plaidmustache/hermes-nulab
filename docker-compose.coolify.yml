@@ -1,17 +1,11 @@
 # Coolify deployment compose file for hermes-nulab.
-# Uses build directives with Dockerfiles from the git repo.
-# All services use named Docker volumes for persistence.
+# Uses Docker Compose networking — services communicate by name.
 
 services:
   gateway:
     build:
       context: .
       dockerfile: Dockerfile.gateway
-    network_mode: bridge
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "127.0.0.1:18642:18642"
     volumes:
       - hermes-data:/opt/data
     environment:
@@ -28,14 +22,10 @@ services:
       - HINDSIGHT_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - OPENPASS_MCP_TOKEN=Bearer ${OPENPASS_MCP_TOKEN}
+    restart: unless-stopped
 
   webui:
     image: ghcr.io/nesquena/hermes-webui:latest
-    network_mode: bridge
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "18787:8787"
     volumes:
       - hermes-data:/opt/data
     environment:
@@ -49,12 +39,10 @@ services:
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
     depends_on:
       - gateway
+    restart: unless-stopped
 
   webui_auth:
     image: caddy:2-alpine
-    network_mode: bridge
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
     ports:
       - "8787:80"
     environment:
@@ -72,7 +60,7 @@ services:
           basic_auth {
             $${WEBUI_BASIC_AUTH_USER} $${WEBUI_BASIC_AUTH_HASH}
           }
-          reverse_proxy host.docker.internal:18787
+          reverse_proxy webui:8787
         }
         CEOF
         exec caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
@@ -84,9 +72,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.openpass
-    network_mode: bridge
-    ports:
-      - "127.0.0.1:8788:8788"
     volumes:
       - hermes-openpass:/root/.openpass
     environment:
@@ -103,9 +88,6 @@ services:
 
   hindsight:
     image: ghcr.io/vectorize-io/hindsight:latest
-    network_mode: bridge
-    ports:
-      - "127.0.0.1:8888:8888"
     volumes:
       - hermes-hindsight:/home/hindsight/.pg0
     environment:
