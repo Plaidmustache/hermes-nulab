@@ -39,6 +39,7 @@ services:
     volumes:
       - hermes-data:/opt/data
       - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
+      - hermes-workspace:/home/hermeswebui/workspace
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
       - HERMES_WEBUI_PORT=8787
@@ -46,7 +47,6 @@ services:
       - HERMES_WEBUI_STATE_DIR=/opt/data
       - HERMES_WEBUI_AUTO_INSTALL=1
       - HERMES_WEBUI_PASSWORD=Sillyauth2020?
-      - HERMES_WEBUI_DEFAULT_WORKSPACE=/opt/data/workspace
       - WANTED_UID=501
       - WANTED_GID=20
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
@@ -105,3 +105,4 @@ volumes:
   hermes-agent-src:
   hermes-openpass:
   hermes-hindsight:
+  hermes-workspace:
