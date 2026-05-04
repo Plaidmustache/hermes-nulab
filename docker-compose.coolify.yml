@@ -8,6 +8,7 @@ services:
       dockerfile: Dockerfile.gateway
     volumes:
       - hermes-data:/opt/data
+      - hermes-agent-src:/opt/hermes
     environment:
       - HERMES_UID=${HERMES_UID:-501}
       - HERMES_GID=${HERMES_GID:-20}
@@ -36,14 +37,13 @@ services:
     image: ghcr.io/nesquena/hermes-webui:latest
     volumes:
       - hermes-data:/opt/data
-      - .:/opt/hermes-agent-src
+      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
       - HERMES_WEBUI_PORT=8787
       - HERMES_HOME=/opt/data
       - HERMES_WEBUI_STATE_DIR=/opt/data
       - HERMES_WEBUI_AUTO_INSTALL=1
-      - HERMES_WEBUI_AGENT_DIR=/opt/hermes-agent-src
       - WANTED_UID=${HERMES_UID:-501}
       - WANTED_GID=${HERMES_GID:-20}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
@@ -108,5 +108,6 @@ services:
 
 volumes:
   hermes-data:
+  hermes-agent-src:
   hermes-openpass:
   hermes-hindsight:
