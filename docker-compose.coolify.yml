@@ -39,6 +39,12 @@ services:
 
   webui:
     image: ghcr.io/nesquena/hermes-webui:latest
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        mkdir -p ~/.local/bin
+        curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=~/.local sh
+        exec /hermeswebui_init.bash
     volumes:
       - hermes-data:/opt/data
       - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
