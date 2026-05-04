@@ -95,8 +95,8 @@ services:
     entrypoint: ["sh", "-c"]
     command:
       - |
-        if [ ! -f /root/.openpass/identity.json ]; then
-          openpass init /root/.openpass --auth passphrase
+        if [ ! -f /root/.openpass/identity.age ]; then
+          echo "$${OPENPASS_PASSPHRASE}" | openpass init /root/.openpass --auth passphrase
         fi
         exec openpass serve --bind 0.0.0.0 --port 8788
     restart: unless-stopped
