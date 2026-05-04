@@ -1,8 +1,2 @@
 FROM nousresearch/hermes-agent:latest
 RUN . /opt/hermes/.venv/bin/activate && uv pip install "hindsight-client>=0.4.22"
-
-# Fix volume permissions for webui container access on Coolify.
-# Must run as root — after gosu drop, the hermes user can't chmod host-level volumes.
-COPY docker-entrypoint-wrapper.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint-wrapper.sh
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint-wrapper.sh"]
