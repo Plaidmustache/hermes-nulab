@@ -28,12 +28,14 @@ services:
     image: ghcr.io/nesquena/hermes-webui:latest
     volumes:
       - hermes-data:/opt/data
+      - .:/opt/hermes-agent-src
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
       - HERMES_WEBUI_PORT=8787
       - HERMES_HOME=/opt/data
       - HERMES_WEBUI_STATE_DIR=/opt/data
       - HERMES_WEBUI_AUTO_INSTALL=1
+      - HERMES_WEBUI_AGENT_DIR=/opt/hermes-agent-src
       - WANTED_UID=${HERMES_UID:-501}
       - WANTED_GID=${HERMES_GID:-20}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
