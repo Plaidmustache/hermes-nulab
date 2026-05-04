@@ -34,6 +34,9 @@ The override also uses Docker bridge networking with localhost-bound ports
 instead of upstream `network_mode: host`, which avoids Docker Desktop host
 networking surprises on macOS.
 
+**Deployment:** For Coolify VPS deployment, see `CLAUDE.md` and
+`docker-compose.coolify.yml`.
+
 The dashboard runs with Hermes' `--insecure` flag inside Docker only so it can
 bind to `0.0.0.0` in the container. Docker publishes it to localhost only:
 `127.0.0.1:19119`.
