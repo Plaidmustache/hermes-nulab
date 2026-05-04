@@ -1,11 +1,6 @@
 # Coolify deployment compose file for hermes-nulab.
-# Adapted from docker-compose.override.yml with Coolify-specific changes:
-#   - Named Docker volumes instead of bind mounts (data seeded post-deploy)
-#   - WebUI port exposed publicly (no 127.0.0.1 binding) for Traefik routing
-#   - Container names removed (Coolify manages naming)
-#
-# Required env vars (set in Coolify dashboard):
-#   DEEPSEEK_API_KEY, OPENPASS_PASSPHRASE, OPENPASS_MCP_TOKEN
+# Uses build directives with Dockerfiles from the git repo.
+# All services use named Docker volumes for persistence.
 
 services:
   gateway:
@@ -19,7 +14,6 @@ services:
       - "127.0.0.1:18642:18642"
     volumes:
       - hermes-data:/opt/data
-      - ./patches/hindsight-plugin-patched.py:/opt/hermes/plugins/memory/hindsight/__init__.py
     environment:
       - HERMES_UID=${HERMES_UID:-501}
       - HERMES_GID=${HERMES_GID:-20}
@@ -42,16 +36,12 @@ services:
       - "8787:8787"
     volumes:
       - hermes-data:/opt/data
-      - .:/opt/hermes-agent-src
-      - ./webui-static/notification.ogg:/apptoo/static/notification.ogg
-      - ./webui-static/messages.js:/apptoo/static/messages.js
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
       - HERMES_WEBUI_PORT=8787
       - HERMES_HOME=/opt/data
       - HERMES_WEBUI_STATE_DIR=/opt/data
       - HERMES_WEBUI_AUTO_INSTALL=1
-      - HERMES_WEBUI_AGENT_DIR=/opt/hermes-agent-src
       - WANTED_UID=${HERMES_UID:-501}
       - WANTED_GID=${HERMES_GID:-20}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
