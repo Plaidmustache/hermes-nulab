@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Read `AGENTS.md` for the upstream hermes-agent development guide. This file covers **this project's deployment-specific rules.**
+> **AGENTS.md** is the upstream hermes-agent development guide (CLI internals, plugin system, testing). For **this project's deployment-specific rules**, read this file and the Obsidian runbooks.
 
 ## Deployment Workflow
 
