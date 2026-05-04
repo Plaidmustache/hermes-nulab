@@ -42,7 +42,8 @@ services:
     entrypoint: ["sh", "-c"]
     command:
       - |
-        curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=/usr/local sh
+        mkdir -p ~/.local/bin
+        curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=~/.local sh
         exec /hermeswebui_init.bash
     volumes:
       - hermes-data:/opt/data
