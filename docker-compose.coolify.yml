@@ -50,7 +50,7 @@ services:
     depends_on:
       - gateway
 
-  webui-auth:
+  webui_auth:
     image: caddy:2-alpine
     network_mode: bridge
     extra_hosts:
