@@ -27,8 +27,6 @@ services:
       - sh
       - -c
       - |
-        chmod 755 /opt/data
-        chmod 644 /opt/data/config.yaml /opt/data/settings.json /opt/data/SOUL.md 2>/dev/null || true
         /opt/hermes/.venv/bin/hermes config set model.provider "deepseek"
         /opt/hermes/.venv/bin/hermes config set model.default "deepseek-v4-flash"
         /opt/hermes/.venv/bin/hermes config set model.base_url "https://api.deepseek.com"
