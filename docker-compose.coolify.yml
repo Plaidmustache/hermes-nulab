@@ -61,6 +61,7 @@ services:
       - WANTED_UID=501
       - WANTED_GID=20
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - GROQ_API_KEY=${GROQ_API_KEY}
     depends_on:
       - gateway
     restart: unless-stopped
