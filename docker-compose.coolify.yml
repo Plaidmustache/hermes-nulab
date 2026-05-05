@@ -19,6 +19,7 @@ services:
       - API_SERVER_MODEL_NAME=${API_SERVER_MODEL_NAME:-hermes-nulab}
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
       - DEEPSEEK_BASE_URL=${DEEPSEEK_BASE_URL:-https://api.deepseek.com}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
       - GATEWAY_ALLOW_ALL_USERS=${GATEWAY_ALLOW_ALL_USERS:-true}
       - HINDSIGHT_LLM_API_KEY=${DEEPSEEK_API_KEY}
       - HINDSIGHT_API_LLM_API_KEY=${DEEPSEEK_API_KEY}
@@ -29,9 +30,6 @@ services:
       - sh
       - -c
       - |
-        /opt/hermes/.venv/bin/hermes config set model.provider "deepseek"
-        /opt/hermes/.venv/bin/hermes config set model.default "deepseek-v4-flash"
-        /opt/hermes/.venv/bin/hermes config set model.base_url "https://api.deepseek.com"
         /opt/hermes/.venv/bin/hermes config set auxiliary.vision.model "glm-4.6v"
         /opt/hermes/.venv/bin/hermes config set auxiliary.vision.provider "zai"
         chmod -R a+rX /opt/hermes

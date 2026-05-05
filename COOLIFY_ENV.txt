@@ -2,8 +2,9 @@
 # Set these in Coolify's dashboard for the application.
 
 # ── Required ──────────────────────────────────────────────────────
-# LLM provider — DeepSeek API key
+# LLM providers — set both for profile switching, or just the one(s) you use
 DEEPSEEK_API_KEY=sk-...
+OPENAI_API_KEY=sk-...
 
 # OpenPass vault passphrase (clean alphanumeric, no / + =)
 OPENPASS_PASSPHRASE=...
