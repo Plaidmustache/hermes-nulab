@@ -44,6 +44,7 @@ services:
         exec /hermeswebui_init.bash
     volumes:
       - hermes-data:/opt/data
+      - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
       - hermes-workspace:/home/hermeswebui/workspace
     environment:
       - HERMES_WEBUI_HOST=0.0.0.0
@@ -109,6 +110,7 @@ services:
 
 volumes:
   hermes-data:
+  hermes-agent-src:
   hermes-openpass:
   hermes-hindsight:
   hermes-workspace:
