@@ -22,6 +22,8 @@ data/
 tmp/
 temp_vision_images/
 hermes-*/*
+!hermes-webui/
+!hermes-webui/**
 examples/
 tests/quick_test_dataset.jsonl
 tests/sample_dataset.jsonl

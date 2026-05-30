@@ -35,7 +35,8 @@ services:
     restart: unless-stopped
 
   webui:
-    build: https://github.com/Plaidmustache/hermes-webui.git#master
+    build:
+      context: ./hermes-webui
     volumes:
       - hermes-data:/opt/data
       - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
