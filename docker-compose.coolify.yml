@@ -35,13 +35,7 @@ services:
     restart: unless-stopped
 
   webui:
-    image: ghcr.io/nesquena/hermes-webui:latest
-    entrypoint: ["sh", "-c"]
-    command:
-      - |
-        mkdir -p ~/.local/bin
-        curl -sSL https://raw.githubusercontent.com/pimalaya/himalaya/master/install.sh | PREFIX=~/.local sh
-        exec /hermeswebui_init.bash
+    build: https://github.com/Plaidmustache/hermes-webui.git#master
     volumes:
       - hermes-data:/opt/data
       - hermes-agent-src:/home/hermeswebui/.hermes/hermes-agent
@@ -53,6 +47,7 @@ services:
       - HERMES_WEBUI_STATE_DIR=/opt/data
       - HERMES_WEBUI_AUTO_INSTALL=1
       - HERMES_WEBUI_PASSWORD=Sillyauth2020?
+      - HERMES_WEBUI_DEFAULT_WORKSPACE=/home/hermeswebui/workspace
       - WANTED_UID=501
       - WANTED_GID=20
       - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
