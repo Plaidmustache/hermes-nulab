@@ -1,8 +1,9 @@
 FROM nousresearch/hermes-agent:latest
 RUN . /opt/hermes/.venv/bin/activate && uv pip install "hindsight-client>=0.4.22"
 
-# Auto-fix volume permissions for webui container access.
-# Runs as root before the entrypoint drops privileges.
-COPY docker-entrypoint-wrapper.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint-wrapper.sh
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint-wrapper.sh"]
+# No ENTRYPOINT override — let /init (s6-overlay) handle UID/GID remap,
+# volume chown, config seeding, and skills sync via cont-init scripts.
+# The compose CMD (config set + gateway run) is executed by
+# main-wrapper.sh as the hermes user via s6-setuidgid.
+#
+# See: https://hermes-agent.nousresearch.com/docs/user-guide/docker

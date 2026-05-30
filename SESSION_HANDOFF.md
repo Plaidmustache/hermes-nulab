@@ -51,8 +51,33 @@ Pure reverse proxy on port 80 → `webui:8787`. NO basic auth — caused CORS is
 ### OpenPass
 Auto-initializes vault on first boot (`identity.age` check). Passphrase piped via `echo ... | openpass init`. Entrypoint overridden to `sh -c` for init script. MCP connection in gateway config.yaml uses service name `openpass:8788/mcp`.
 
+**Credential retrieval pattern:** Other containers (webui, himalaya) that need passwords at runtime use a helper script that curls the OpenPass MCP HTTP endpoint — not the CLI. The CLI can't reach across containers. The MCP endpoint is the intended programmatic interface for this architecture. Helper script at `~/.local/bin/himalaya-openpass.sh` fetches the Infomaniak password via curl, prints to stdout. Himalaya's `auth.cmd` calls this script. No passwords stored on disk anywhere.
+
 ### Hindsight
-Separate long-term memory container. Plugin bundled with hermes-agent. Config at `hindsight/config.json` with `mode: local_external`, `api_url: http://hindsight:8888`. Both `HINDSIGHT_LLM_API_KEY` AND `HINDSIGHT_API_LLM_API_KEY` env vars needed (plugin and daemon use different names). Initializes lazily on first session.
+Separate long-term memory container. Plugin bundled with hermes-agent.
+
+**Config path:** `~/.hermes/hindsight/config.json` — standard Hermes path. On this deployment, `HERMES_HOME=/opt/data`, so it resolves to `/opt/data/hindsight/config.json`. Local dev copy at `.hermes-data/hindsight/config.json` uses `host.docker.internal:8888`; Coolify uses `hindsight:8888`.
+
+**Config contents:**
+```json
+{
+  "mode": "local_external",
+  "api_url": "http://hindsight:8888",
+  "bank_id": "hermes-nulab",
+  "auto_recall": true,
+  "auto_retain": true,
+  "recall_budget": "mid",
+  "memory_mode": "hybrid"
+}
+```
+
+**Architecture notes:**
+- `memory_mode: hybrid` = auto-recall context injection + `hindsight_retain`/`recall`/`reflect` tools exposed to the model.
+- `memory.provider: hindsight` in `config.yaml` means the built-in `memory()` tool is **backed by Hindsight**. It's one unified system, not two competing ones. The 2K char `memory()` limit is for the always-injected preamble; Hindsight handles bulk storage and semantic search.
+- Auto-recall (via `pre_llm_call` hook) injects relevant memories into the system prompt every turn. Auto-retain (via `post_llm_call` hook) stores user/assistant exchanges automatically.
+- No self-driving agents (knowledge pages) plugin installed. The base hybrid setup covers the 90% use case.
+- Both `HINDSIGHT_LLM_API_KEY` AND `HINDSIGHT_API_LLM_API_KEY` env vars needed (plugin and daemon use different names). Initializes lazily on first session.
+- Health check: `curl http://hindsight:8888/health` → `{"status":"healthy","database":"connected"}`
 
 ### Vision
 Z.AI vision via coding plan. Model: `glm-4.6v` (glm-5v-turbo not available on coding plan). Provider: `zai`. API key in Coolify env var `ZAI_API_KEY` — Hermes recognizes it (confirmed in `auth.py`: `api_key_env_vars=("GLM_API_KEY", "ZAI_API_KEY", "Z_AI_API_KEY")`). Endpoint auto-detected. Model changes need gateway restart (cached in process env vars at startup).
@@ -60,8 +85,8 @@ Z.AI vision via coding plan. Model: `glm-4.6v` (glm-5v-turbo not available on co
 ### Authentication
 SINGLE layer: WebUI built-in password. We tried Caddy basic auth → removed because it broke the WebUI health check (login.js uses `credentials: omit` — Caddy 401 without CORS headers blocks it).
 
-### Himalayas Email
-CLI binary installed at webui startup via compose. Config at `/opt/data/home/.config/himalaya/config.toml` on the volume. Password retrieved from OpenPass MCP at runtime via helper script (`himalaya-openpass.sh`). Zero plaintext passwords in config files. Helper script calls OpenPass MCP, reads bearer token from config.yaml, fetches Infomaniak password.
+### Himalaya Email
+CLI binary installed at webui startup via compose. Config at `/opt/data/home/.config/himalaya/config.toml` on the volume. Password retrieved from OpenPass MCP at runtime via helper script (`/opt/data/home/.local/bin/himalaya-openpass.sh`). Zero plaintext passwords on disk — the helper script curls the OpenPass MCP endpoint and prints the password to stdout. Himalaya's `backend.auth.cmd` calls this script. This is the correct pattern for cross-container credential retrieval: MCP HTTP is the intended programmatic interface, not the CLI (which can't reach across containers). The containers remain decoupled — no shared volumes or binaries needed.
 
 ### Credential Storage
 Infomaniak device password stored in OpenPass vault at `email/soren.vos@ik.me`. OpenPass MCP tools available to agent (`mcp_openpass_list_entries`, `mcp_openpass_get_entry`, etc.). Email: `soren.vos@ik.me`, IMAP: `imap.infomaniak.com:993`, SMTP: `mail.infomaniak.com:587`.
