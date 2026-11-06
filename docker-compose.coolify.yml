@@ -106,6 +106,12 @@ services:
 
 volumes:
   hermes-data:
+  # Agent source installed into the webui's own venv (python 3.12). Seed it from
+  # THIS repo (e.g. `git archive main | tar x`), not from an agent image's
+  # /opt/hermes: from v0.20 on the agent gates its core deps behind
+  # `python_version >= '3.14'`, so on 3.12 the install lands nothing and the
+  # webui logs "missing modules: ['run_agent']" / "Agent features may not work".
+  # Re-seed after bumping the agent source: drop the volume, extract, chown 501:20.
   hermes-agent-src:
   hermes-openpass:
   hermes-hindsight:
