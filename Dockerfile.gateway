@@ -4,7 +4,13 @@
 # that same 0.22 line. Bump this pin when Scarf announces support for a newer line
 # (Hermes v0.23.0 shipped 2026-11-05, after Scarf v3.8.0).
 FROM nousresearch/hermes-agent:v0.22.7
-RUN . /opt/hermes/.venv/bin/activate && uv pip install "hindsight-client>=0.4.22"
+
+# v0.22.7's venv is uv-managed and ships neither uv nor pip on PATH, so the old
+# `. /opt/hermes/.venv/bin/activate && uv pip install ...` line failed the build
+# with "uv: not found". Install uv, then target the venv interpreter directly —
+# activating it under /bin/sh (dash) also emitted "realpath: '': No such file".
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh \
+ && uv pip install --python /opt/hermes/.venv/bin/python "hindsight-client>=0.4.22"
 
 # No ENTRYPOINT override — let /init (s6-overlay) handle UID/GID remap,
 # volume chown, config seeding, and skills sync via cont-init scripts.
