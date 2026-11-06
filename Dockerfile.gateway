@@ -1,4 +1,9 @@
-FROM nousresearch/hermes-agent:latest
+# Pinned to the newest release inside Scarf's documented compatibility window.
+# Scarf v3.8.0 (2026-11-02) states "Compatible with Hermes v0.6.0 through v0.22.5";
+# its /undo + /retry support needs Hermes v0.22.3+. v0.22.7 is the newest patch of
+# that same 0.22 line. Bump this pin when Scarf announces support for a newer line
+# (Hermes v0.23.0 shipped 2026-11-05, after Scarf v3.8.0).
+FROM nousresearch/hermes-agent:v0.22.7
 RUN . /opt/hermes/.venv/bin/activate && uv pip install "hindsight-client>=0.4.22"
 
 # No ENTRYPOINT override — let /init (s6-overlay) handle UID/GID remap,
