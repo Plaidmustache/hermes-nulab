@@ -1613,6 +1613,32 @@ def _base_url_points_at_local_server(base_url: str) -> bool:
         return False
 
 
+# OpenAI-compatible APIs whose model IDs are namespaced (``namespace/model``).
+# For these routes the leading namespace is part of the model ID, not a
+# provider hint. Groq serves ``openai/gpt-oss-120b`` and
+# ``meta-llama/llama-4-scout-17b-16e-instruct``; stripping the namespace makes
+# Groq answer HTTP 404 ``model_not_found``.
+_NAMESPACED_MODEL_ID_HOSTS = ("api.groq.com",)
+
+
+def _base_url_preserves_model_namespace(base_url: str) -> bool:
+    """True when base_url's API requires the full namespaced model ID.
+
+    Mirrors ``_base_url_points_at_local_server``: parse the host and return
+    False on any error so callers fall back to the generic prefix-strip.
+    """
+    if not base_url:
+        return False
+    try:
+        from urllib.parse import urlparse
+        host = (urlparse(base_url).hostname or "").lower()
+    except Exception:
+        return False
+    if not host:
+        return False
+    return any(host == h or host.endswith("." + h) for h in _NAMESPACED_MODEL_ID_HOSTS)
+
+
 def _custom_slug_rest_looks_like_host_port(rest: str) -> bool:
     """True when ``custom:<rest>`` is an endpoint-style slug ``host:port``.
 
@@ -1884,6 +1910,11 @@ def resolve_model_provider(model_id: str) -> tuple:
             # pointing at a loopback/private host.
             if (_is_local_server_provider(config_provider)
                     or _base_url_points_at_local_server(config_base_url)):
+                return model_id, config_provider, config_base_url
+            # Namespaced-model APIs (Groq) treat the leading namespace as part of
+            # the model ID. "openai/gpt-oss-120b" stripped to "gpt-oss-120b" makes
+            # Groq answer HTTP 404 model_not_found, so keep the full ID there.
+            if _base_url_preserves_model_namespace(config_base_url):
                 return model_id, config_provider, config_base_url
             # Only strip the provider prefix when it's a known provider namespace
             # (e.g. "openai/gpt-5.4" → "gpt-5.4" for a custom OpenAI-compatible proxy).

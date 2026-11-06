@@ -440,8 +440,30 @@ else
     # `build_editable` hook never runs bdist_wheel. The stage dir must therefore
     # survive the install — the editable finder resolves the agent from it (this
     # matches what upstream hermes-webui does with `uv pip install -e`).
-    uv pip install -e "$_stage_src[all]" --trusted-host pypi.org --trusted-host files.pythonhosted.org \
-      || error_exit "Failed to install hermes-agent's requirements"
+    # Agent v0.22.5+ only resolves with its own [tool.uv] override-dependencies
+    # (they lift browser-harness's old `pillow==12.3.0` pin to the patched
+    # Pillow 13), and `uv pip install` never reads a project's [tool.uv] table.
+    # Without this a plain install exits with
+    # "requirements are unsatisfiable" and the container never starts.
+    # Extract the list with stdlib tomllib and pass --overrides, as upstream's
+    # newer init does; fall back to the plain install if extraction fails.
+    _ovr="$(mktemp "${TMPDIR:-/tmp}/hermes-agent-uv-overrides.XXXXXX" 2>/dev/null || true)"
+    if [ -n "$_ovr" ]; then
+      python3 -c 'import sys, tomllib; d = tomllib.load(open(sys.argv[1], "rb")); [print(e) for e in d.get("tool", {}).get("uv", {}).get("override-dependencies", [])]' \
+        "$_stage_src/pyproject.toml" > "$_ovr" 2>/dev/null || true
+      [ -s "$_ovr" ] || { rm -f "$_ovr"; _ovr=""; }
+    fi
+    if [ -n "$_ovr" ]; then
+      echo "-- Applying hermes-agent's [tool.uv] override-dependencies ($(grep -c . "$_ovr") entries)"
+      uv pip install -e "$_stage_src[all]" --overrides "$_ovr" \
+        --trusted-host pypi.org --trusted-host files.pythonhosted.org \
+        || error_exit "Failed to install hermes-agent's requirements"
+      rm -f "$_ovr"
+    else
+      echo "!! Could not extract hermes-agent's [tool.uv] override-dependencies; installing without them"
+      uv pip install -e "$_stage_src[all]" --trusted-host pypi.org --trusted-host files.pythonhosted.org \
+        || error_exit "Failed to install hermes-agent's requirements"
+    fi
   else
     echo ""
     echo "!! WARNING: hermes-agent source not found."

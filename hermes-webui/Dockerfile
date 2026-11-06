@@ -1,4 +1,10 @@
-FROM python:3.12-slim
+# Hermes Web UI image.
+#
+# Base is python 3.14, not 3.12: the agent this UI drives gates its core
+# dependencies behind `python_version >= '3.14'` from v0.20 on. On 3.12 the
+# agent install lands no dependencies at all and the server logs
+# "missing modules: ['run_agent']" / "Agent features may not work correctly".
+FROM python:3.14-slim
 
 LABEL maintainer="nesquena"
 LABEL description="Hermes Web UI — browser interface for Hermes Agent"
@@ -81,11 +87,14 @@ ENV HERMES_WEBUI_PORT=8787
 
 EXPOSE 8787
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+# start-period is 15 minutes, not the upstream 10s: the entrypoint installs the
+# agent (dependency resolution plus a ~2 GB source stage copy) before the server
+# binds, so a short start period marks the container unhealthy for the whole of
+# its first boot.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=900s --retries=3 \
   CMD curl -f http://localhost:8787/health || exit 1
 
 # docker_init.bash performs root-only bind-mount setup, then drops to hermeswebui
 # before starting the WebUI server. The production image does not ship sudo.
 USER root
 CMD ["/hermeswebui_init.bash"]
-
