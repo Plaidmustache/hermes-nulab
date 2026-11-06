@@ -431,9 +431,17 @@ else
       rm -rf "$_stage_src"/*.egg-info "$_stage_src"/build "$_stage_src"/dist 2>/dev/null || true
       find "$_stage_src" -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
     fi
-    uv pip install "$_stage_src[all]" --trusted-host pypi.org --trusted-host files.pythonhosted.org \
+    # Hermes >= 0.22 ships a setup.py that REFUSES to build wheels or sdists
+    # ("Building wheels or sdists for hermes-agent is not supported"), so the
+    # plain `uv pip install "$_stage_src[all]"` below died with
+    # "setuptools.build_meta.build_wheel failed" and error 44 — an endless
+    # restart loop once the mounted agent source moved past v0.15.
+    # Upstream's setup.py names the supported route: an editable install, whose
+    # `build_editable` hook never runs bdist_wheel. The stage dir must therefore
+    # survive the install — the editable finder resolves the agent from it (this
+    # matches what upstream hermes-webui does with `uv pip install -e`).
+    uv pip install -e "$_stage_src[all]" --trusted-host pypi.org --trusted-host files.pythonhosted.org \
       || error_exit "Failed to install hermes-agent's requirements"
-    rm -rf "$_stage_src"
   else
     echo ""
     echo "!! WARNING: hermes-agent source not found."
