@@ -12,6 +12,13 @@ FROM nousresearch/hermes-agent:v0.22.7
 RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh \
  && uv pip install --python /opt/hermes/.venv/bin/python "hindsight-client>=0.4.22"
 
+# Fix v0.22.7's Groq reasoning wire. Its custom provider profile hardcoded
+# reasoning_effort="default" for api.groq.com (or "none" for a disabled config);
+# Groq accepts only "low" / "medium" / "high" and 400s on both, so every turn on a
+# Groq custom endpoint failed with "Your request was not processed". The patch file
+# carries the full rationale and the removal trigger (#75089).
+COPY patches/model-provider-custom-patched.py /opt/hermes/plugins/model-providers/custom/__init__.py
+
 # No ENTRYPOINT override — let /init (s6-overlay) handle UID/GID remap,
 # volume chown, config seeding, and skills sync via cont-init scripts.
 # The compose CMD (config set + gateway run) is executed by
